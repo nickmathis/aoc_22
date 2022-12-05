@@ -27,6 +27,7 @@ lines.each_with_index do |line, line_num|
 	stack_count.times {|i| stacks[line_num] << line[4*i - 3]}
 end
 
+# courtesy https://stackoverflow.com/questions/22618894/how-do-i-rotate-this-2-d-array-using-ruby
 stacks = stacks.transpose.map(&:reverse).rotate
 stacks.each_with_index {|stack, i| stacks[i].reject! {|e| e == " "}}
 
