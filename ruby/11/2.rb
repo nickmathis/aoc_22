@@ -1,7 +1,7 @@
 #! /usr/bin/env ruby
 
 class Monkey
-	attr_accessor :inpection_count
+	attr_accessor :inpection_count, :stress_manager
 	def initialize(operation, test_case, true_monkey, false_monkey)
 		@operation = operation
 		@test_case = test_case
@@ -26,7 +26,7 @@ class Monkey
 		else
 			item + parts[2].to_i
 		end
-		new /= 3
+		new %= @stress_manager
 
 		[new, new % @test_case == 0 ? @true_monkey : @false_monkey]
 	end
@@ -34,7 +34,7 @@ end
 	
 temp_monkey = []
 monkey_array = []
-File.open("test.txt").each do |line|
+File.open("full.txt").each do |line|
 	if matches = line.match(/Monkey (\d)/)
 		temp_monkey << { monkey: nil, items: nil, op: nil, test_case: nil, true_monkey: nil, false_monkey: nil }
 	elsif matches = line.match(/Starting items: (.*)/)
@@ -42,22 +42,25 @@ File.open("test.txt").each do |line|
 	elsif matches = line.match(/Operation: (.*)/)
 		temp_monkey.last[:op] = matches[1]
 	elsif matches = line.match(/Test: divisible by (.*)/)
-		temp_monkey.last[:test_case] = matches[1]
+		temp_monkey.last[:test_case] = matches[1].to_i
 	elsif matches = line.match(/If true: throw to monkey (\d)/)
-		temp_monkey.last[:true_monkey] = matches[1]
+		temp_monkey.last[:true_monkey] = matches[1].to_i
 	elsif matches = line.match(/If false: throw to monkey (\d)/)
-		temp_monkey.last[:false_monkey] = matches[1]
+		temp_monkey.last[:false_monkey] = matches[1].to_i
 		monkey_array << {monkey: Monkey.new(
 			temp_monkey.last[:op],
-			temp_monkey.last[:test_case].to_i,
-			temp_monkey.last[:true_monkey].to_i,
-			temp_monkey.last[:false_monkey].to_i
+			temp_monkey.last[:test_case],
+			temp_monkey.last[:true_monkey],
+			temp_monkey.last[:false_monkey],
 		), items: temp_monkey.last[:items]}
 	end
 end
-# monkey_array.each {|m| puts m.inspect }
-20.times do |i|
-	puts i if i % 100 == 0
+
+# bad place to do this, but it'll do work
+stress_manager = temp_monkey.collect {|m| m[:test_case]}.inject(:*)
+monkey_array.each { |monkey| monkey[:monkey].stress_manager = stress_manager }
+
+10000.times do |i|
 	monkey_array.each do |monkey|
 		monkey[:items].each do |item|
 			res = monkey[:monkey].inspection(item.to_i)
