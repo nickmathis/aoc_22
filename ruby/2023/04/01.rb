@@ -4,7 +4,6 @@ File.open("full.txt").each do |line|
   g, data = line.split(":")
   ticket = g.split(" ").last.to_i
 
-  tickets[ticket] = {}
   mine, winners = data.split("|")
   mine = mine.split(" ").collect(&:to_i)
   winners = winners.split(" ").collect(&:to_i)
